@@ -1,0 +1,201 @@
+1. Ensure the appropriate MongoDB software version/patches are installed (Manual)
+
+On Ubuntu:
+Run the following command from within the MongoDB shell to determine if the MongoDB
+software version complies with your organization’s operational needs:
+> db.version()
+On Windows:
+Navigate to the Installation directory of Mongo DB on the server and run below command
+mongod.exe --version
+
+2.  Ensure Authentication is configured (Automated)
+
+On Ubuntu:
+cat /etc/mongod.conf | grep “authorization”
+On Windows:
+type mongod.conf | findstr “authorization”
+
+3.  Ensure that MongoDB does not bypass authentication via the localhost exception (Automated)
+
+ On Ubuntu:
+cat /etc/mongod.conf |grep "enableLocalhostAuthBypass"
+On Windows:
+type mongod.conf | findstr "enableLocalhostAuthBypass"
+
+4. Ensure authentication is enabled in the sharded cluster (Automated)
+
+To Check That your Current MongoDB is configured for sharding setup, execute the
+following command:
+sh.status()
+OR
+db.printShardingStatus()
+
+On Ubuntu:
+cat /etc/mongod.conf | grep “PEMKeyFile”
+cat /etc/mongod.conf | grep "CAFile"
+cat /etc/mongod.conf | grep "clusterFile"
+cat /etc/mongod.conf | grep "clusterAuthMode"
+cat /etc/mongod.conf | grep “authenticationMechanisms:”
+On Windows:
+type mongod.conf | findstr “PEMKeyFile”
+type mongod.conf | findstr “CAFile”
+type mongod.conf | findstr “clusterFile”
+type mongod.conf | findstr “clusterAuthMode”
+type mongod.conf | findstr “authenticationMechanisms:”
+
+(Only for Development Purpose)
+On Ubuntu:
+cat /etc/mongod.conf | grep “keyFile=”
+On Windows:
+type mongod.conf | findstr “keyFile”
+
+5. Ensure least privilege for database accounts (Manual)
+
+To check accounts with database roles scoped in "admin" database, use the following
+query:
+db.system.users.find(
+{"roles.role":{$in:["dbOwner","userAdmin","userAdminAnyDatabase"]},"roles.db"
+: "admin" } )
+
+6.  Ensure that role-based access control is enabled and configured appropriately (Manual)
+
+ Identify users' roles and privileges:
+> db.getUser()
+> db.getRole()
+
+7. Ensure that MongoDB is run using a non-privileged, dedicated service account (Manual)
+
+PID owner.
+# ps -ef | grep -E "mongos|mongod"
+
+8. Ensure that each role for each MongoDB database is needed and grants only the necessary privileges (Manual)
+
+ db.runCommand(
+{
+rolesInfo: 1,
+showPrivileges: true,
+showBuiltinRoles: true
+}
+)
+
+9. Review Superuser/Admin Roles (Manual)
+
+db.runCommand( { rolesInfo: "dbOwner" } )
+db.runCommand( { rolesInfo: "userAdmin" } )
+db.runCommand( { rolesInfo: "userAdminAnyDatabase" } )
+
+10. Ensure legacy TLS protocols are disabled (Automated)
+
+ mongod --config /etc/mongod.conf
+net:
+tls:
+mode: requireTLS
+certificateKeyFile: /etc/ssl/mongodb.pem
+CAFile: /etc/ssl/caToValidateClientCertificates.pem
+disabledProtocols: TLS1_0,TLS1_1
+
+11. Ensure Weak Protocols are Disabled (Automated)
+
+On Ubuntu:
+cat /etc/mongod.conf | grep –A20 ‘net’ | grep –A10 ‘ssl’ | grep
+‘disabledProtocols’
+• On Windows:
+type mongod.conf | findstr –A20 ‘net’ | findstr –A10 ‘ssl’ | findstr
+‘disabledProtocols’
+
+12. Ensure Encryption of Data in Transit TLS or SSL (Transport Encryption) (Automated)
+
+ On Ubuntu:
+cat /etc/mongod.conf | grep –A20 ‘net’ | grep –A10 ‘tls’ | grep ‘mode’
+On Windows:
+type mongod.conf | findstr –A20 ‘net’ | findstr –A10 ‘tls’ | findstr ‘mode’
+
+13. Ensure Federal Information Processing Standard (FIPS) is enabled (Automated)
+
+ mongod --config /etc/mongod.conf
+
+14. Ensure Encryption of Data at Rest (Manual)
+
+On Ubuntu:
+cat /etc/mongod.conf | grep --enableEncryption 'yes' | grep --
+encryptionKeyFile '<path to keyfile>'
+On Windows:
+type mongod.conf | findstr --enableEncryption 'yes' | findstr --
+encryptionKeyFile '<path to keyfile>'
+
+15. Ensure that system activity is audited (Automated)
+
+On Ubuntu:
+cat /etc/mongod.conf |grep –A4 "auditLog" | grep "destination"
+On Windows:
+type mongod.conf | findstr –A4 "auditLog" | findstr "destination"
+
+16. Ensure that audit filters are configured properly (Manual)
+
+On Ubuntu:
+cat /etc/mongod.conf |grep –A10 "auditLog" | grep "filter"
+On Windows:
+type mongod.conf | findstr –A10 "auditLog" | findstr "filter"
+
+17. Ensure that logging captures as much information as possible
+(Automated)
+
+On Ubuntu:
+cat /etc/mongod.conf |grep "quiet"
+On Windows:
+type mongod.conf | findstr "quiet"
+
+18. Ensure that new entries are appended to the end of the log file
+(Automated)
+
+On Ubuntu:
+cat /etc/mongod.conf | grep "logAppend"
+On Windows:
+type mongod.conf | findstr "logAppend"
+
+19.  Ensure that MongoDB uses a non-default port (Automated)
+
+On Ubuntu:
+cat /etc/mongod.conf |grep “port”
+On Windows:
+type mongod.conf | findstr “port”
+
+20. Ensure that operating system resource limits are set for MongoDB
+(Manual)
+
+Extract the process ID for MongoDB:
+ps -ef | grep mongod
+View the limits associated with that process number:
+cat /proc/1322/limits
+
+21. Ensure that server-side scripting is disabled if not needed (Manual)
+
+On Ubuntu:
+cat /etc/mongod.conf | grep –A10 "security" | grep "javascriptEnabled"
+On Windows:
+type mongod.conf | findstr –A10 "security" | findstr "javascriptEnabled"
+
+22. Ensure appropriate key file permissions are set (Manual)
+
+On Ubuntu:
+cat /etc/mongod.conf | grep “keyFile:”
+cat /etc/mongod.conf | grep “PEMKeyFile:”
+cat /etc/mongod.conf | grep “CAFile:”
+
+On Windows:
+type mongod.conf | findstr “keyFile:”
+type mongod.conf | findstr “PEMKeyFile:”
+type mongod.conf | findstr “CAFile:”
+
+Check the permission of the file using:
+ls -l certificate_file_locations
+ls -l keyfile_locations
+
+23. Ensure appropriate database file permissions are set. (Manual)
+On Ubuntu:
+cat /etc/mongod.conf |grep "dbpath"
+or
+cat /etc/mongod.conf | grep "dbPath"
+
+On Windows:
+type mongod.conf | findstr "dbpath"
